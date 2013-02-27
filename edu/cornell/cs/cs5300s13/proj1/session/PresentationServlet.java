@@ -85,7 +85,9 @@ public class PresentationServlet extends HttpServlet {
 		"<br>&nbsp;<br>" +
 		"</b></big></big>" +
 		"<form method=POST action=\"PresentationServlet\">" +
-		"<input type=submit name=cmd value=Replace>&nbsp;&nbsp;<input type=text name=NewText size=40 maxlength=512>&nbsp;&nbsp;" +
+		"<input type=submit name=cmd value=Replace>&nbsp;&nbsp;" + 
+		"<input type=text name=NewText value=\"" + serverSession.getMessage() + "\" " +
+		"size=40 maxlength=512>&nbsp;&nbsp;" +
 		"</form>" +
 		"<form method=GET action=\"PresentationServlet\">" +
 		"<input type=submit name=cmd value=Refresh>" +
