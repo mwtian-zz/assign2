@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,48 +33,80 @@ public class PresentationServlet extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		ServerSessionState serverState = sessionManager.getSession(request);
-		if (serverState == null) {
-			serverState = sessionManager.newSession();
-		}
-		PrintWriter out = response.getWriter();
-		printPage(out, request, serverState);
+		ServerSessionState serverSession = processRequest(request);
+		generateResponse(request, response, serverSession);
 	}
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
+		ServerSessionState serverSession = processRequest(request);
+		String commmand = request.getParameter("cmd");
+		if (commmand != null) {
+			if (commmand.equals("Replace")) {
+				String text = request.getParameter("NewText");
+				if (text == null) {
+					text = "";
+				}
+				serverSession.setMessage(text);
+			} else if (commmand.equals("LogOut")) {
+				sessionManager.deleteSession(serverSession);
+				serverSession = sessionManager.newSession();
+			}
+		}
+		generateResponse(request, response, serverSession);
 	}
 	
-	private void printPage(PrintWriter output, HttpServletRequest request, ServerSessionState serverState) {
-		output.println
+	private ServerSessionState processRequest(HttpServletRequest request) {
+		ServerSessionState serverSession = sessionManager.getSession(request);
+		if (serverSession == null) {
+			serverSession = sessionManager.newSession();
+		} else {
+			serverSession.updateExpiration();
+		}
+		return serverSession;
+	}
+	
+	private void generateResponse(HttpServletRequest request, HttpServletResponse response, ServerSessionState serverSession) throws IOException {
+		serverSession.setClientSession(response);
+		PrintWriter out = response.getWriter();
+		Cookie[] cookies = request.getCookies();
+		String cookieContent = "";
+		if (cookies != null && cookies.length > 0) {
+			cookieContent = cookies[0].getValue();
+		}
+		out.println
 		("<html>" +
 		"<body>" +
 		"<br>&nbsp;<br>" +
 		"<big><big><b>" +
-		"Welcome, New User! (<- Your message goes here)" +
+		serverSession.getMessage() +
 		"<br>&nbsp;<br>" +
 		"</b></big></big>" +
-		"<form method=GET action=\"PresentationServlet\">" +
+		"<form method=POST action=\"PresentationServlet\">" +
 		"<input type=submit name=cmd value=Replace>&nbsp;&nbsp;<input type=text name=NewText size=40 maxlength=512>&nbsp;&nbsp;" +
 		"</form>" +
 		"<form method=GET action=\"PresentationServlet\">" +
 		"<input type=submit name=cmd value=Refresh>" +
 		"</form>" +
-		"<form method=GET action=\"PresentationServlet\">" +
+		"<form method=POST action=\"PresentationServlet\">" +
 		"<input type=submit name=cmd value=LogOut>" +
 		"</form>" +
+		"<p>" +
+		"Session ID: " + serverSession.getSessionID() +
+		"<p>" +
 		"<p>" +
 		"Session on: " +
 		"IP - " + request.getRemoteAddr() + "; " + 
 		"port - " + request.getRemotePort() + "; " +
-		"host - " + request.getRemoteHost() +
+		"host name - " + request.getRemoteHost() +
 		"<p>" +
-		"Expires on " + serverState.getExpiration().toString() +
+		"Session expires on " + serverSession.getExpiration().toString() +
+		"<p>" +
+		"Client cookie content: " + cookieContent +
+		"<p>" +
 		"</body>" +
 		"</html>\n");
 	}
-
 }

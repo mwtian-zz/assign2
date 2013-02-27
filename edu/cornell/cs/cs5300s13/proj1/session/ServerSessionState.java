@@ -8,7 +8,7 @@ public class ServerSessionState extends ClientSessionState{
 	private Date expiration;
 	private String message = "";
 	private String cookieName = "CS5300S13PROJ1SESSION";
-	
+	private static long DEFAULT_SHELF_LIFE = 30000;
 	public Date getExpiration() {
 		return expiration;
 	}
@@ -17,12 +17,17 @@ public class ServerSessionState extends ClientSessionState{
 		this.expiration = expiration;
 	}
 
+	public void updateExpiration() {
+		this.setExpiration(new Date(new Date().getTime() + DEFAULT_SHELF_LIFE));
+	}
+	
 	public String getMessage() {
 		return message;
 	}
 
 	public void setMessage(String message) {
 		this.message = message;
+		this.incrementVersion();
 	}
 
 	public ServerSessionState(int seesionID) {
@@ -31,8 +36,7 @@ public class ServerSessionState extends ClientSessionState{
 		this.setPrimaryLocation(0);
 		this.setSecondaryLocation(1);
 		this.setMessage("Welcome, New User! (<- Replace your message here)");
-		Date current = new Date();
-		this.setExpiration(new Date(current.getTime() + 10000));
+		updateExpiration();
 	};
 	
 	public void setClientSession(HttpServletResponse response) {
