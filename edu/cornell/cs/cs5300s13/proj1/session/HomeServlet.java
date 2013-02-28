@@ -10,22 +10,24 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Servlet implementation class PresentationServlet
+ * Servlet implementation class HomeServlet
  */
 @WebServlet("/home")
-public class PresentationServlet extends HttpServlet {
+public class HomeServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	//private int serverID = 0;
 	private SessionMap sessionMap = null;
-	
+	private GarbageCollectorThread garbageCollector = null;
     /**
      * Default constructor. 
      */
-    public PresentationServlet() {
+    public HomeServlet() {
     }
 
     public void init() throws ServletException {
     	sessionMap = new SessionMap();
+    	garbageCollector = new GarbageCollectorThread(sessionMap);
+    	new Thread(garbageCollector).start();
     }
 
 	/**
@@ -51,7 +53,7 @@ public class PresentationServlet extends HttpServlet {
 				serverSession.setMessage(text);
 			} else if (commmand.equals("LogOut")) {
 				sessionMap.deleteSession(serverSession);
-				serverSession = sessionMap.newSession();
+				serverSession = sessionMap.newSession(request);
 			}
 		}
 		generateResponse(request, response, serverSession);
@@ -60,9 +62,7 @@ public class PresentationServlet extends HttpServlet {
 	private ServerSessionState processRequest(HttpServletRequest request) {
 		ServerSessionState serverSession = sessionMap.getSession(request);
 		if (serverSession == null) {
-			serverSession = sessionMap.newSession();
-		} else {
-			serverSession.updateExpiration();
+			serverSession = sessionMap.newSession(request);
 		}
 		return serverSession;
 	}
@@ -97,15 +97,26 @@ public class PresentationServlet extends HttpServlet {
 		"<p>" +
 		"Session ID: " + serverSession.getSessionID() +
 		"<p>" +
+		"Session Version: " + serverSession.getVersion() +
 		"<p>" +
-		"Session on: " +
+		"Expires on " + serverSession.getExpiration().toString() +
+		"<p>" +
+		"Expiration time: " + ServerSessionState.DEFAULT_SHELF_LIFE / 1000 + " sec" +
+		"<p>" +
+		"Garbage Collector runs every " + GarbageCollectorThread.SLEEP_PERIOD / 1000 + " sec, " + 
+		"runned " + garbageCollector.runCount + " times" +
+		"<p>" +
+		"Server on: " +
+		"IP - " + request.getLocalAddr() + "; " + 
+		"port - " + request.getLocalPort() + "; " +
+		"host name - " + request.getLocalName() +
+		"<p>" +
+		"Client from: " +
 		"IP - " + request.getRemoteAddr() + "; " + 
 		"port - " + request.getRemotePort() + "; " +
 		"host name - " + request.getRemoteHost() +
 		"<p>" +
-		"Session expires on " + serverSession.getExpiration().toString() +
-		"<p>" +
-		"Client cookie content: " + cookieContent +
+		"Client cookie content (last request): " + cookieContent +
 		"<p>" +
 		"</body>" +
 		"</html>\n");

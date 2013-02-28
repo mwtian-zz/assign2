@@ -5,8 +5,8 @@ import javax.servlet.http.Cookie;
 public class ClientSessionState {
 	private int sessionID;
 	private int version;
-	private int primaryLocation;
-	private int secondaryLocation;
+	private int locationCount;
+	private String[] location;
 	
 	public ClientSessionState() {
 	}
@@ -14,8 +14,11 @@ public class ClientSessionState {
 	public ClientSessionState(String[] fields) {
 		sessionID = Integer.parseInt(fields[0]);
 		version = Integer.parseInt(fields[1]);
-		primaryLocation = Integer.parseInt(fields[2]);
-		secondaryLocation = Integer.parseInt(fields[3]);
+		locationCount = Integer.parseInt(fields[2]);
+		location = new String[locationCount];
+		for (int i = 0; i < locationCount; i++) {
+			location[i] = fields[3 + i];
+		}
 	}
 	
 	public int getSessionID() {
@@ -34,22 +37,23 @@ public class ClientSessionState {
 		this.version = version;
 	}
 
-	public int getPrimaryLocation() {
-		return primaryLocation;
+
+	public int getLocationCount() {
+		return locationCount;
 	}
 
-	public void setPrimaryLocation(int primaryLocation) {
-		this.primaryLocation = primaryLocation;
+	public void setLocationCount(int locationCount) {
+		this.locationCount = locationCount;
 	}
 
-	public int getSecondaryLocation() {
-		return secondaryLocation;
+	public String[] getLocation() {
+		return location;
 	}
 
-	public void setSecondaryLocation(int secondaryLocation) {
-		this.secondaryLocation = secondaryLocation;
+	public void setLocation(String[] location) {
+		this.location = location;
 	}
-
+	
 	public int incrementVersion() {
 		if (version < Integer.MAX_VALUE) {
 			version++;
@@ -65,9 +69,11 @@ public class ClientSessionState {
 		cookie.append("_");
 		cookie.append(version);
 		cookie.append("_");
-		cookie.append(primaryLocation);
-		cookie.append("_");
-		cookie.append(secondaryLocation);
+		cookie.append(locationCount);
+		for (int i = 0; i < locationCount; i++) {
+			cookie.append("_");
+			cookie.append(location[i]);
+		}
 		return cookie.toString();
 	}
 

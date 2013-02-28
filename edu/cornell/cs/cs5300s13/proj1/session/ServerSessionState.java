@@ -6,9 +6,10 @@ import javax.servlet.http.HttpServletResponse;
 
 public class ServerSessionState extends ClientSessionState{
 	private Date expiration;
-	private String message = "";
-	private String cookieName = "CS5300S13PROJ1SESSION";
-	private static long DEFAULT_SHELF_LIFE = 30000;
+	private String message = "Welcome, New User! (Replace your message below)";
+	private static final String cookieName = "CS5300S13PROJ1SESSION";
+	public static final long DEFAULT_SHELF_LIFE = 30000;
+	
 	public Date getExpiration() {
 		return expiration;
 	}
@@ -19,6 +20,7 @@ public class ServerSessionState extends ClientSessionState{
 
 	public void updateExpiration() {
 		this.setExpiration(new Date(new Date().getTime() + DEFAULT_SHELF_LIFE));
+		this.incrementVersion();
 	}
 	
 	public String getMessage() {
@@ -30,12 +32,11 @@ public class ServerSessionState extends ClientSessionState{
 		this.incrementVersion();
 	}
 
-	public ServerSessionState(int seesionID) {
+	public ServerSessionState(int seesionID, String[] location) {
 		this.setSessionID(seesionID);
 		this.setVersion(0);
-		this.setPrimaryLocation(0);
-		this.setSecondaryLocation(1);
-		this.setMessage("Welcome, New User! (<- Replace your message here)");
+		this.setLocationCount(location.length);
+		this.setLocation(location);
 		updateExpiration();
 	};
 
