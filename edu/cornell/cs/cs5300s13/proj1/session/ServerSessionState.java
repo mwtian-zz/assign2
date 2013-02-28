@@ -38,7 +38,7 @@ public class ServerSessionState extends ClientSessionState{
 		this.setMessage("Welcome, New User! (<- Replace your message here)");
 		updateExpiration();
 	};
-	
+
 	public void setClientSession(HttpServletResponse response) {
 		response.addCookie(new Cookie(cookieName, super.generateCookie()));
 	}

@@ -12,21 +12,20 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Servlet implementation class PresentationServlet
  */
-@WebServlet("/PresentationServlet")
+@WebServlet("/home")
 public class PresentationServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	//private int serverID = 0;
-	private SessionManager sessionManager = null;
+	private SessionMap sessionMap = null;
 	
     /**
      * Default constructor. 
      */
     public PresentationServlet() {
-        // TODO Auto-generated constructor stub
     }
 
     public void init() throws ServletException {
-    	sessionManager = new SessionManager();
+    	sessionMap = new SessionMap();
     }
 
 	/**
@@ -51,17 +50,17 @@ public class PresentationServlet extends HttpServlet {
 				}
 				serverSession.setMessage(text);
 			} else if (commmand.equals("LogOut")) {
-				sessionManager.deleteSession(serverSession);
-				serverSession = sessionManager.newSession();
+				sessionMap.deleteSession(serverSession);
+				serverSession = sessionMap.newSession();
 			}
 		}
 		generateResponse(request, response, serverSession);
 	}
 	
 	private ServerSessionState processRequest(HttpServletRequest request) {
-		ServerSessionState serverSession = sessionManager.getSession(request);
+		ServerSessionState serverSession = sessionMap.getSession(request);
 		if (serverSession == null) {
-			serverSession = sessionManager.newSession();
+			serverSession = sessionMap.newSession();
 		} else {
 			serverSession.updateExpiration();
 		}
@@ -84,15 +83,15 @@ public class PresentationServlet extends HttpServlet {
 		serverSession.getMessage() +
 		"<br>&nbsp;<br>" +
 		"</b></big></big>" +
-		"<form method=POST action=\"PresentationServlet\">" +
+		"<form method=POST action=\"home\">" +
 		"<input type=submit name=cmd value=Replace>&nbsp;&nbsp;" + 
 		"<input type=text name=NewText value=\"" + serverSession.getMessage() + "\" " +
 		"size=40 maxlength=512>&nbsp;&nbsp;" +
 		"</form>" +
-		"<form method=GET action=\"PresentationServlet\">" +
+		"<form method=GET action=\"home\">" +
 		"<input type=submit name=cmd value=Refresh>" +
 		"</form>" +
-		"<form method=POST action=\"PresentationServlet\">" +
+		"<form method=POST action=\"home\">" +
 		"<input type=submit name=cmd value=LogOut>" +
 		"</form>" +
 		"<p>" +

@@ -1,5 +1,7 @@
 package edu.cornell.cs.cs5300s13.proj1.session;
 
+import javax.servlet.http.Cookie;
+
 public class ClientSessionState {
 	private int sessionID;
 	private int version;
@@ -67,5 +69,14 @@ public class ClientSessionState {
 		cookie.append("_");
 		cookie.append(secondaryLocation);
 		return cookie.toString();
+	}
+
+	public static ClientSessionState translateCookie(Cookie cookie) {
+		String[] fields = cookie.getValue().split("_");
+		ClientSessionState clientSession = null;
+		if (fields.length >= 4) {
+			clientSession = new ClientSessionState(fields);
+		}
+		return clientSession;
 	}
 }
